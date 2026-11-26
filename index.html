@@ -1,178 +1,153 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AR Котокофейня</title>
-    <!-- Подключение библиотек A-Frame, анимаций (aframe-extras) и MindAR -->
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-    <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-
-        #status {
-            position: fixed;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(45, 30, 20, 0.8);
-            color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 13px;
-            z-index: 1000;
-            white-space: nowrap;
-        }
-
-        #info-card {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 88%;
-            max-width: 400px;
-            background: rgba(45, 30, 20, 0.92);
-            color: #fdf6ec;
-            padding: 16px;
-            border-radius: 16px;
-            border: 2px solid #d4a373;
-            z-index: 1000;
-            display: none; /* Скрыто, пока логотип не найден */
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
-        }
-
-            #info-card h3 {
-                margin: 0 0 8px 0;
-                color: #f4a261;
-                font-size: 18px;
-            }
-
-        #fact-text {
-            margin: 0 0 14px 0;
-            font-size: 14px;
-            line-height: 1.4;
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        button {
-            background: #d4a373;
-            color: #2d1e14;
-            font-weight: bold;
-            border: none;
-            padding: 9px 14px;
-            border-radius: 8px;
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-            button:active {
-                opacity: 0.8;
-            }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AR Котокофейня</title>
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Segoe UI', Arial, sans-serif;
+    }
+    /* Скрываем стандартную кнопку VR */
+    .a-enter-vr-button {
+      display: none !important;
+    }
+    #status {
+      position: fixed;
+      top: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(45, 30, 20, 0.8);
+      color: #ffffff;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      z-index: 1000;
+      white-space: nowrap;
+    }
+    #info-card {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 88%;
+      max-width: 400px;
+      background: rgba(45, 30, 20, 0.92);
+      color: #fdf6ec;
+      padding: 16px;
+      border-radius: 16px;
+      border: 2px solid #d4a373;
+      z-index: 1000;
+      display: none;
+      text-align: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
+    }
+    #info-card h3 {
+      margin: 0 0 8px 0;
+      color: #f4a261;
+      font-size: 18px;
+    }
+    #fact-text {
+      margin: 0 0 14px 0;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    button {
+      background: #d4a373;
+      color: #2d1e14;
+      font-weight: bold;
+      border: none;
+      padding: 9px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    button:active {
+      opacity: 0.8;
+    }
+  </style>
 </head>
 <body>
 
-    <div id="status">Наведите камеру на логотип котокофейни...</div>
+  <div id="status">Наведите камеру на логотип котокофейни...</div>
 
-    <div id="info-card">
-        <h3>Добро пожаловать в котокофейню!</h3>
-        <p id="fact-text"></p>
-        <div class="btn-group">
-            <button id="btn-next">Следующий факт</button>
-            <button id="btn-rotate">Пауза / Вращать</button>
-        </div>
-    </div>
+  <div id="info-card">
+    <h3>Добро пожаловать в котокофейню!</h3>
+    <p id="fact-text"></p>
+    <button id="btn-next">Следующий факт</button>
+  </div>
 
-    <!-- AR-сцена -->
-    <a-scene mindar-image="imageTargetSrc: ./targets.mind;"
-             color-space="sRGB"
-             renderer="colorManagement: true, physicallyCorrectLights"
-             vr-mode-ui="enabled: false"
-             device-orientation-permission-ui="enabled: false">
-        <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+  <!-- AR-сцена -->
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets.mind;"
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false"
+  >
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-        <!-- Привязка к маркеру (логотипу) -->
-        <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
-            <!-- 3D-модель кота со встроенной анимацией -->
-            <a-gltf-model id="cat-model"
-                          src="./cat.glb"
-                          animation-mixer
-                          position="0 -0.2 0.1"
-                          scale="7 7 7"
-                          rotation="0 0 0"></a-gltf-model>
-        </a-entity>
-    </a-scene>
+    <a-entity id="ar-target" mindar-image-target="targetIndex: 0">
+      <a-gltf-model
+        id="cat-model"
+        src="./cat.glb"
+        animation-mixer
+        position="0 -0.2 0.1"
+        scale="7 7 7"
+        rotation="0 0 0"
+      ></a-gltf-model>
+    </a-entity>
+  </a-scene>
 
-    <!-- Логика приложения на JavaScript -->
-    <script>
-        const targetEl = document.getElementById('ar-target');
-        const modelEl = document.getElementById('cat-model');
-        const infoCard = document.getElementById('info-card');
-        const statusEl = document.getElementById('status');
-        const factText = document.getElementById('fact-text');
-        const btnNext = document.getElementById('btn-next');
-        const btnRotate = document.getElementById('btn-rotate');
+  <script>
+    const targetEl = document.getElementById('ar-target');
+    const modelEl = document.getElementById('cat-model');
+    const infoCard = document.getElementById('info-card');
+    const statusEl = document.getElementById('status');
+    const factText = document.getElementById('fact-text');
+    const btnNext = document.getElementById('btn-next');
 
-        // Массив фактов о кошках
-        const facts = [
-            "Кошки проводят во сне около 70% своей жизни — примерно 13–16 часов в сутки.",
-            "Мурлыканье кошки вибрирует на частоте 25–150 Гц, что помогает человеку снимать стресс.",
-            "У каждой кошки уникальный рисунок носа, как отпечатки пальцев у человека.",
-            "Кошки не чувствуют сладкого вкуса, поэтому кофе с сиропом их не заинтересует.",
-            "В нашей котокофейне можно не только выпить кофе, но и погладить пушистых обитателей!"
-        ];
+    const facts = [
+      "Кошки проводят во сне около 70% своей жизни — примерно 13–16 часов в сутки.",
+      "Мурлыканье кошки вибрирует на частоте 25–150 Гц, что помогает человеку снимать стресс.",
+      "У каждой кошки уникальный рисунок носа, как отпечатки пальцев у человека.",
+      "Кошки не чувствуют сладкого вкуса, поэтому кофе с сиропом их не заинтересует.",
+      "В нашей котокофейне можно не только выпить кофе, но и погладить пушистых обитателей!"
+    ];
 
-        let factIndex = 0;
-        let isRotating = true;
-        let angle = 0;
+    let factIndex = 0;
+    let angle = 0;
 
-        factText.textContent = facts[factIndex];
+    factText.textContent = facts[factIndex];
 
-        // Событие: логотип попал в кадр камеры
-        targetEl.addEventListener('targetFound', () => {
-            infoCard.style.display = 'block';
-            statusEl.textContent = 'Логотип распознан!';
-            statusEl.style.background = 'rgba(42, 157, 143, 0.85)';
-        });
+    targetEl.addEventListener('targetFound', () => {
+      infoCard.style.display = 'block';
+      statusEl.textContent = 'Логотип распознан!';
+      statusEl.style.background = 'rgba(42, 157, 143, 0.85)';
+    });
 
-        // Событие: логотип вышел из кадра
-        targetEl.addEventListener('targetLost', () => {
-            infoCard.style.display = 'none';
-            statusEl.textContent = 'Наведите камеру на логотип котокофейни...';
-            statusEl.style.background = 'rgba(45, 30, 20, 0.8)';
-        });
+    targetEl.addEventListener('targetLost', () => {
+      infoCard.style.display = 'none';
+      statusEl.textContent = 'Наведите камеру на логотип котокофейни...';
+      statusEl.style.background = 'rgba(45, 30, 20, 0.8)';
+    });
 
-        // Переключение фактов по кнопке
-        btnNext.addEventListener('click', () => {
-            factIndex = (factIndex + 1) % facts.length;
-            factText.textContent = facts[factIndex];
-        });
+    btnNext.addEventListener('click', () => {
+      factIndex = (factIndex + 1) % facts.length;
+      factText.textContent = facts[factIndex];
+    });
 
-        // Пауза/возобновление вращения
-        btnRotate.addEventListener('click', () => {
-            isRotating = !isRotating;
-        });
-
-        // Покадровая анимация вращения модели
-        function animate() {
-            if (isRotating) {
-                angle = (angle + 1) % 360;
-                modelEl.setAttribute('rotation', `0 ${angle} 0`);
-            }
-            requestAnimationFrame(animate);
-        }
-        animate();
-    </script>
+    function animate() {
+      angle = (angle + 1) % 360;
+      modelEl.setAttribute('rotation', `0 ${angle} 0`);
+      requestAnimationFrame(animate);
+    }
+    animate();
+  </script>
 </body>
 </html>
